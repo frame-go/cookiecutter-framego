@@ -1,0 +1,29 @@
+version: v1
+plugins:
+  - name: go
+    out: .
+    opt:
+      - paths=source_relative
+  - name: validate
+    out: .
+    opt:
+      - paths=source_relative
+      - lang=go
+  - name: go-grpc
+    out: .
+    opt:
+      - paths=source_relative
+  - name: grpc-gateway
+    out: .
+    opt:
+      - paths=source_relative
+  - name: openapiv2
+    out: .
+    opt:
+      - json_names_for_fields=false
+      - enums_as_ints=true
+      - openapi_naming_strategy=simple
+  - name: framego
+    out: .
+    opt:
+      - paths=source_relative

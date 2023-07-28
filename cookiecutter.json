@@ -1,0 +1,12 @@
+{
+  "project_title": "Sample Project",
+  "project_name": "{{ cookiecutter.project_title|lower|replace(' ', '-') }}",
+  "app_name": "{{ cookiecutter.project_name|replace('-', '_') }}",
+  "app_package_name": "{{ cookiecutter.app_name|replace('_', '') }}",
+  "service_name": "{{ cookiecutter.app_name }}",
+  "__service_name_title": "{{ cookiecutter.service_name|replace(\"_\", \" \")|title|replace(\" \", \"\") }}",
+  "__service_name_camel": "{% for s in cookiecutter.__service_name_title %}{% if loop.first %}{{ s|lower }}{% else %}{{ s }}{% endif %}{% endfor %}",
+  "service_package_name": "{{ cookiecutter.service_name|replace('_', '') }}",
+  "go_module": "github.com/{{ cookiecutter.project_name }}",
+  "go_version": "1.20"
+}

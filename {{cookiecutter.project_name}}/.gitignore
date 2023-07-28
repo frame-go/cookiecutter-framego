@@ -1,0 +1,14 @@
+.DS_Store
+.DS_Store?
+._*
+.Trashes
+.swp
+ehthumbs.db
+Thumbs.db
+*.exe
+*.log
+/.idea/
+/bin
+/buf_vendor
+/tmp
+/tools

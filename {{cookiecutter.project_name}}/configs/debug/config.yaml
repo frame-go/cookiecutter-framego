@@ -1,0 +1,38 @@
+debug: true
+beautify_log: true
+app:
+  name: {{ cookiecutter.app_name }}
+  observable:
+    endpoints:
+      http: ":8080"
+    modules:
+      - pprof
+      - metrics
+      - swagger
+      - channelz
+      - grpcui
+  services:
+    - name: {{ cookiecutter.service_name }}
+      endpoints:
+        grpc: ":9000"
+        http: ":8000"
+      middlewares:
+        - recovery
+        - open_tracing
+        - metrics
+        - context_logger
+        - log_request
+        - request_validation
+  clients:
+    grpc:
+      middlewares:
+        - open_tracing
+        - metrics
+      servers:
+  databases:
+    - name: {{ cookiecutter.service_name }}
+      database: "{{ cookiecutter.service_name }}_db"
+      user: "test"
+      password: "password"
+      masters: ["127.0.0.1:3306"]
+      slaves: []
