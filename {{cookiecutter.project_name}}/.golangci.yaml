@@ -1,16 +1,8 @@
-run:
-  skip-dirs:
-    - docs
-
-linters-settings:
-  maligned:
-    suggest-new: true
-  gocritic:
-    disabled-checks:
-      - singleCaseSwitch
-
+version: "2"
 linters:
-  disable-all: true
+  default: none
+  enable:
+    - govet
+formatters:
   enable:
     - gofmt
-    - govet

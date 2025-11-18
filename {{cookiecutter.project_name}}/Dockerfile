@@ -1,10 +1,9 @@
-FROM golang:{{ cookiecutter.go_version }}-bullseye
+FROM golang:{{ cookiecutter.go_version }}-bookworm
 
-ARG CI_JOB_TOKEN
 COPY . src/{{ cookiecutter.project_name }}
 RUN cd src/{{ cookiecutter.project_name }} && make build
 
-FROM debian:bullseye-slim
+FROM debian:bookworm-slim
 
 ENV APP_NAME app
 WORKDIR /app/{{ cookiecutter.project_name }}

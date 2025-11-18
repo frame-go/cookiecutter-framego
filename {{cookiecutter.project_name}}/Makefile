@@ -23,12 +23,10 @@ clean:
 generate: buf-generate go-generate
 
 .PHONY: go-generate
-go-generate: export PATH:=$(CURDIR)/tools:$(PATH)
 go-generate:
 	go generate ./...
 
 .PHONY: buf-generate
-buf-generate: export PATH:=$(CURDIR)/tools:$(PATH)
 buf-generate:
 	@rm -rf $(BUF_VENDOR_DIR)
 	buf generate
@@ -65,16 +63,10 @@ check-go-version:
 init: export GOBIN=$(CURDIR)/tools
 init: export PATH:=$(CURDIR)/tools:$(PATH)
 init: check-go-version
+	go get tool
 	go mod tidy
-	go install github.com/envoyproxy/protoc-gen-validate
-	go install github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway
-	go install github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-openapiv2
-	go install github.com/swaggo/swag/cmd/swag
-	go install google.golang.org/grpc/cmd/protoc-gen-go-grpc
-	go install google.golang.org/protobuf/cmd/protoc-gen-go
-	go install github.com/frame-go/protoc-gen-framego
 	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(CURDIR)/tools
-	buf mod update
+	buf dep update
 	buf generate
 	buf export --output $(BUF_VENDOR_DIR)
 	go mod tidy
