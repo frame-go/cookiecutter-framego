@@ -15,6 +15,7 @@ func main() {
 	})
 	app.Init()
 	{{ cookiecutter.service_package_name }}.RegisterSwag()
-	{{ cookiecutter.service_package_name }}.Register{{ cookiecutter.__service_name_title }}WithGrpcAndHttp(app.GetService("{{ cookiecutter.service_name }}"), handlers.NewServer(app))
+	server := handlers.NewServer(app)
+	{{ cookiecutter.service_package_name }}.Register{{ cookiecutter.__service_name_title }}WithGrpcAndHttp(app.GetService("{{ cookiecutter.service_name }}"), server)
 	app.RunOrExit()
 }

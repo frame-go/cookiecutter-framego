@@ -4,69 +4,51 @@ import (
 	"context"
 	"time"
 
+	"github.com/frame-go/framego/uniqueid"
+
+	"{{ cookiecutter.go_module }}/api/{{ cookiecutter.service_package_name }}"
 	"{{ cookiecutter.go_module }}/internal/models"
 )
 
+func (m *Manager) GetObject(ctx context.Context, id uniqueid.ID) (*models.Object, error) {
+	object := &models.Object{}
+	err := m.db.WithContext(ctx).
+		Where("id = ? AND status <> ?", id, int16({{ cookiecutter.service_package_name }}.ObjectStatus_OBJECT_STATUS_DELETED)).
+		First(object).Error
+	if err != nil {
+		return nil, err
+	}
+	return object, nil
+}
+
+func (m *Manager) ListObjects(ctx context.Context, offset int, limit int) ([]*models.Object, int64, error) {
+	query := m.db.WithContext(ctx).Model(&models.Object{}).
+		Where("status <> ?", int16({{ cookiecutter.service_package_name }}.ObjectStatus_OBJECT_STATUS_DELETED))
+	var total int64
+	if err := query.Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+	query = query.Order("create_time DESC")
+	if limit > 0 {
+		query = query.Offset(offset).Limit(limit)
+	}
+	var objects []*models.Object
+	if err := query.Find(&objects).Error; err != nil {
+		return nil, 0, err
+	}
+	return objects, total, nil
+}
+
 func (m *Manager) CreateObject(ctx context.Context, object *models.Object) error {
-	object.CreateTime = uint32(time.Now().Unix())
-	result := m.{{ cookiecutter.__service_name_camel }}DB.WithContext(ctx).Create(object)
-	if result.Error != nil {
-		return result.Error
-	}
-	return nil
-}
-
-func (m *Manager) GetObject(ctx context.Context, id uint64) (*models.Object, error) {
-	object := &models.Object{}
-	result := m.{{ cookiecutter.__service_name_camel }}DB.WithContext(ctx).First(object, id)
-	if result.Error != nil {
-		return nil, result.Error
-	}
-	return object, nil
-}
-
-func (m *Manager) GetObjectByName(ctx context.Context, name string) (*models.Object, error) {
-	object := &models.Object{}
-	result := m.{{ cookiecutter.__service_name_camel }}DB.WithContext(ctx).Where("`name` = ?", name).First(object)
-	if result.Error != nil {
-		return nil, result.Error
-	}
-	return object, nil
+	return m.db.WithContext(ctx).Create(object).Error
 }
 
 func (m *Manager) UpdateObject(ctx context.Context, object *models.Object) error {
-	object.UpdateTime = uint32(time.Now().Unix())
-	result := m.{{ cookiecutter.__service_name_camel }}DB.WithContext(ctx).Save(object)
-	if result.Error != nil {
-		return result.Error
-	}
-	return nil
+	return m.db.WithContext(ctx).Save(object).Error
 }
 
-func (m *Manager) UpdateObjectDataByName(ctx context.Context, name string, data interface{}) error {
-	updateFields := map[string]interface{}{
-		"data":        data,
-		"update_time": uint32(time.Now().Unix()),
-	}
-	result := m.{{ cookiecutter.__service_name_camel }}DB.WithContext(ctx).Model(&models.Object{}).Where("`name` = ?", name).Updates(updateFields)
-	if result.Error != nil {
-		return result.Error
-	}
-	return nil
-}
-
-func (m *Manager) DeleteObject(ctx context.Context, id uint64) error {
-	result := m.{{ cookiecutter.__service_name_camel }}DB.WithContext(ctx).Delete(&models.Object{}, id)
-	if result.Error != nil {
-		return result.Error
-	}
-	return nil
-}
-
-func (m *Manager) DeleteObjectByName(ctx context.Context, name string) error {
-	result := m.{{ cookiecutter.__service_name_camel }}DB.WithContext(ctx).Where("`name` = ?", name).Delete(&models.Object{})
-	if result.Error != nil {
-		return result.Error
-	}
-	return nil
+func (m *Manager) UpdateObjectStatus(ctx context.Context, id uniqueid.ID, status int16) error {
+	return m.db.WithContext(ctx).Model(&models.Object{}).
+		Where("id = ?", id).
+		Updates(map[string]any{"status": status, "update_time": time.Now()}).Error
 }

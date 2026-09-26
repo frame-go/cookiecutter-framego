@@ -2,7 +2,7 @@
 .DS_Store?
 ._*
 .Trashes
-.swp
+*.swp
 ehthumbs.db
 Thumbs.db
 *.exe

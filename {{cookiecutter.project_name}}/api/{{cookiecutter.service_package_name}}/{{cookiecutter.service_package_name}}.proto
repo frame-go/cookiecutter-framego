@@ -5,223 +5,99 @@ package {{ cookiecutter.service_package_name }};
 option go_package = "{{ cookiecutter.go_module }}/api/{{ cookiecutter.service_package_name }}";
 
 import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
 import "validate/validate.proto";
-import "protoc-gen-openapiv2/options/annotations.proto";
-
-option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
-  info: {
-    title: "{{ cookiecutter.project_title }}";
-    version: "1.0.0";
-    contact: {
-      name: "";
-      url: "https://{{ cookiecutter.go_module }}";
-      email: "";
-    };
-    license: {
-      name: "Apache 2.0";
-    };
-  };
-  host: "localhost:8000";
-  schemes: [ HTTP, HTTPS ];
-  security_definitions: {
-    security: {
-      key: "ApiKeyAuth";
-      value: {
-        type: TYPE_API_KEY;
-        in: IN_HEADER;
-        name: "X-API-Key";
-      }
-    }
-  }
-  security: {
-    security_requirement: {
-      key: "ApiKeyAuth";
-      value: {};
-    }
-  }
-};
 
 service {{ cookiecutter.__service_name_title }} {
-  rpc CreateObject (CreateObjectRequest) returns (CreateObjectResponse) {
+  // Object
+  rpc GetObject(GetObjectRequest) returns (GetObjectResponse) {
     option (google.api.http) = {
-      post: "/{{ cookiecutter.service_name }}/v1/object/create"
-      body: "*"
-    };
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-      tags: ["object", "v1", "public"];
-      summary: "Create Object";
-      description: "Create new object.";
-      responses: [
-        { key: "200"; value: {description: "OK" }},
-        { key: "400"; value: {description: "Invalid Argument." }},
-        { key: "query_db_error"; value: {description: "DB Query Error." }}
-      ];
-      security: { security_requirement: { key: "iam"; value: { scope: "create_object" }}};
+      get: "{{ cookiecutter.api_path_prefix }}/object/get"
     };
   }
 
-  rpc GetObject (GetObjectRequest) returns (GetObjectResponse) {
+  rpc ListObjects(ListObjectsRequest) returns (ListObjectsResponse) {
     option (google.api.http) = {
-      get: "/{{ cookiecutter.service_name }}/v1/object/get"
-    };
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-      tags: ["object", "v1", "public", "idempotent", "readonly"];
-      summary: "Get Object";
-      description: "Get object data by name.";
-      responses: [
-        { key: "200"; value: {description: "OK" }},
-        { key: "400"; value: {description: "Invalid Argument." }},
-        { key: "object_not_found"; value: {description: "Object Is Not Found." }}
-      ];
-      security: { security_requirement: { key: "iam"; value: { scope: "get_object" }}};
+      get: "{{ cookiecutter.api_path_prefix }}/object/list"
     };
   }
 
-  rpc UpdateObject (UpdateObjectRequest) returns (UpdateObjectResponse) {
+  rpc CreateObject(CreateObjectRequest) returns (CreateObjectResponse) {
     option (google.api.http) = {
-      post: "/{{ cookiecutter.service_name }}/v1/object/update"
+      post: "{{ cookiecutter.api_path_prefix }}/object/create"
       body: "*"
-    };
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-      tags: ["object", "v1", "public", "idempotent"];
-      summary: "Update Object";
-      description: "Update object data.";
-      responses: [
-        { key: "200"; value: {description: "OK" }},
-        { key: "400"; value: {description: "Invalid Argument." }},
-        { key: "query_db_error"; value: {description: "DB Query Error." }}
-      ];
-      security: { security_requirement: { key: "iam"; value: { scope: "update_object" }}};
     };
   }
 
-  rpc DeleteObject (DeleteObjectRequest) returns (DeleteObjectResponse) {
+  rpc UpdateObject(UpdateObjectRequest) returns (UpdateObjectResponse) {
     option (google.api.http) = {
-      post: "/{{ cookiecutter.service_name }}/v1/object/delete"
+      post: "{{ cookiecutter.api_path_prefix }}/object/update"
       body: "*"
     };
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-      tags: ["object", "v1", "public", "idempotent"];
-      summary: "Delete Object";
-      description: "Delete object by name.";
-      responses: [
-        { key: "200"; value: {description: "OK" }},
-        { key: "400"; value: {description: "Invalid Argument." }},
-        { key: "query_db_error"; value: {description: "DB Query Error." }}
-      ];
-      security: { security_requirement: { key: "iam"; value: { scope: "delete_object" }}};
+  }
+
+  rpc DeleteObject(DeleteObjectRequest) returns (DeleteObjectResponse) {
+    option (google.api.http) = {
+      post: "{{ cookiecutter.api_path_prefix }}/object/delete"
+      body: "*"
     };
   }
+}
+
+// Object
+
+enum ObjectStatus {
+  OBJECT_STATUS_ACTIVE = 0;
+  OBJECT_STATUS_DELETED = 1;
 }
 
 message Object {
-  option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_schema) = {
-    json_schema: {
-      required: ["name", "data"];
-      description: "Object data.";
-    }
-  };
-
-  string name = 1 [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-    description: "The name of object."
-  }, 
-  (validate.rules).string = {
-    min_len: 1, 
-    max_len: 100, 
-    pattern: "^[a-z0-9A-Z]+([._-][a-z0-9A-Z]+)*$"
-  }];
-
-  string data = 2 [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-    description: "The data of object."
-  }, 
-  (validate.rules).string = {
-    max_len: 1000
-  }];
-}
-
-message CreateObjectRequest {
-  option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_schema) = {
-    json_schema: {
-      required: ["object"];
-    }
-  };
-
-  Object object = 1 [(validate.rules).message = {required: true}];
-}
-
-message CreateObjectResponse {
-  option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_schema) = {
-    json_schema: {
-      required: ["object"];
-    }
-  };
-
-  Object object = 1;
+  string id = 1;
+  string name = 2 [(validate.rules).string.max_len = 100];
+  string description = 3 [(validate.rules).string.max_len = 1000];
+  int32 status = 4 [(validate.rules).int32.gte = 0]; // ObjectStatus
+  google.protobuf.Timestamp create_time = 5;
+  google.protobuf.Timestamp update_time = 6;
 }
 
 message GetObjectRequest {
-  option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_schema) = {
-    json_schema: {
-      required: ["name"];
-    }
-  };
-
-  string name = 1 [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-    description: "The name of object to be fetched."
-  }, 
-  (validate.rules).string = {
-    min_len: 1, 
-    max_len: 100, 
-    pattern: "^[a-z0-9A-Z]+([._-][a-z0-9A-Z]+)*$"
-  }];
+  string id = 1 [(validate.rules).string.min_len = 1];
 }
 
 message GetObjectResponse {
-  option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_schema) = {
-    json_schema: {
-      required: ["object"];
-    }
-  };
+  Object object = 1;
+}
 
+message ListObjectsRequest {
+  int32 offset = 1 [(validate.rules).int32.gte = 0];
+  int32 limit = 2 [(validate.rules).int32.gte = 0, (validate.rules).int32.lte = 100];
+}
+
+message ListObjectsResponse {
+  repeated Object objects = 1;
+  int32 total = 2;
+}
+
+message CreateObjectRequest {
+  string name = 1 [(validate.rules).string = {min_len: 1, max_len: 100}];
+  string description = 2 [(validate.rules).string.max_len = 1000];
+}
+
+message CreateObjectResponse {
   Object object = 1;
 }
 
 message UpdateObjectRequest {
-  option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_schema) = {
-    json_schema: {
-      required: ["object"];
-    }
-  };
-
-  Object object = 1 [(validate.rules).message = {required: true}];
+  string id = 1 [(validate.rules).string.min_len = 1];
+  string description = 2 [(validate.rules).string.max_len = 1000];
 }
 
 message UpdateObjectResponse {
-  option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_schema) = {
-    json_schema: {
-      required: ["object"];
-    }
-  };
-
   Object object = 1;
 }
 
 message DeleteObjectRequest {
-  option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_schema) = {
-    json_schema: {
-      required: ["name"];
-    }
-  };
-
-  string name = 1 [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-    description: "The name of object to be deleted."
-  }, 
-  (validate.rules).string = {
-    min_len: 1, 
-    max_len: 100, 
-    pattern: "^[a-z0-9A-Z]+([._-][a-z0-9A-Z]+)*$"
-  }];
+  string id = 1 [(validate.rules).string.min_len = 1];
 }
 
-message DeleteObjectResponse {
-}
+message DeleteObjectResponse {}

@@ -18,21 +18,23 @@ app:
         http: ":8000"
       middlewares:
         - recovery
-        - open_tracing
         - metrics
         - context_logger
         - log_request
+        - name: cors
+          allow_origins: ["*"]
+          allow_headers: ["*"]
+          expose_headers: ["*"]
+          max_age: 86400
         - request_validation
-  clients:
-    grpc:
-      middlewares:
-        - open_tracing
-        - metrics
-      servers:
   databases:
     - name: {{ cookiecutter.service_name }}
-      database: "{{ cookiecutter.service_name }}_db"
-      user: "test"
-      password: "password"
-      masters: ["127.0.0.1:3306"]
+      type: postgres
+      database: {{ cookiecutter.service_name }}_db
+      user: {{ cookiecutter.service_name }}
+      password: password
+      masters: ["127.0.0.1:5432"]
       slaves: []
+  id_generator:
+    service_id: 1
+    key: "{{ uuid4()|replace('-', '') }}"

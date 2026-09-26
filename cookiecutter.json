@@ -5,8 +5,8 @@
   "app_package_name": "{{ cookiecutter.app_name|replace('_', '') }}",
   "service_name": "{{ cookiecutter.app_name }}",
   "__service_name_title": "{{ cookiecutter.service_name|replace(\"_\", \" \")|title|replace(\" \", \"\") }}",
-  "__service_name_camel": "{% for s in cookiecutter.__service_name_title %}{% if loop.first %}{{ s|lower }}{% else %}{{ s }}{% endif %}{% endfor %}",
   "service_package_name": "{{ cookiecutter.service_name|replace('_', '') }}",
+  "api_path_prefix": ["/api/v1", "/{{ cookiecutter.app_package_name }}/v1"],
   "go_module": "github.com/{{ cookiecutter.project_name }}",
-  "go_version": "1.24"
+  "go_version": "1.27"
 }

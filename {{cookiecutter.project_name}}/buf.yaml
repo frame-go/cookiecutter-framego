@@ -8,7 +8,7 @@ build:
     - ./buf_vendor
 lint:
   use:
-    - DEFAULT
+    - STANDARD
   except:
     - ENUM_NO_ALLOW_ALIAS
     - ENUM_ZERO_VALUE_SUFFIX
